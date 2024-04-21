@@ -1,6 +1,11 @@
 <template>
   <v-app>
     <v-container>
+                <v-row class="title" style="text-align:center; ">
+            <v-col cols="6">
+              <h1 style="font-weight: 300; font-size: 4rem">Pokedex</h1> 
+          </v-col>
+      </v-row>
       <v-container class="pokemon-container">
         <v-text-field v-model="search" label="Pesquisar" placeholder="Pesquisar Pokémon" solo></v-text-field>
         <v-select v-model="searchType" :items="searchOptions" label="Tipo de Pesquisa" style="width: 10%;"></v-select>
@@ -78,12 +83,21 @@
                 </template>
               </v-row>
             </div>
-            <h3>Games-indices</h3>
-            <div class="abilities">
-              <div class="ability" v-for="(value, index) in selected_pokemon.games_indices" :key="'value'+index">
-                {{ value.ability.games_indices }}
-              </div>
-            </div>
+            <h3>Indices de Jogos</h3>
+            <div class="game-indices">
+    
+   
+    <div class="ability" v-for="(gameIndex, index) in games_indices" :key="'gameIndex'+index">
+          
+          
+    <div>Índice do Jogo: {{ gameIndex.gameIndex }}</div>
+          
+        
+    <div>Nome do Movimento: {{ gameIndex.move.name }}</div>
+          <div>URL do Movimento: {{ gameIndex.move.url }}</div>
+        </div>
+      
+    </div>
           </v-container>
         </v-card-text>
       </v-card>
@@ -143,11 +157,10 @@ export default {
         this.dialog = true;
       });
     },
-       fetch_games_indices() {
-      // Obtém os games_indices para o Pokémon selecionado
+    fetch_games_indices() {
       axios.get(this.selected_pokemon.species.url).then(response => {
         const speciesData = response.data;
-        if (speciesData.game_indices) { // Verifica se games_indices está definido
+        if (speciesData.game_indices) {
           const promises = speciesData.game_indices.map(gameIndex => {
             return axios.get(gameIndex.version.url);
           });
@@ -156,12 +169,15 @@ export default {
             this.games_indices = responses.map(response => {
               return {
                 versionName: response.data.name,
-                gameIndex: speciesData.game_indices.find(gameIndex => gameIndex.version.url === response.config.url).game_index
+                gameIndex: speciesData.game_indices.find(gameIndex => gameIndex.version.url === response.config.url).game_index,
+                move: {
+                  name: speciesData.move.name,
+                  url: speciesData.move.url
+                }
               };
             });
           });
         } else {
-          // Se games_indices não estiver definido, define como um array vazio
           this.games_indices = [];
         }
       });
@@ -242,6 +258,14 @@ export default {
       #C1D2DC
     )
     no-repeat center center fixed !important;
+}
+.title{
+   text-align: center;
+   margin: 2% 70% 0 30%;
+  color: #efefef;
+  font-family: 'Acme', arial;
+  font-size: 10rem;
+  font-weight: inherit;
 }
 
 .pokemon-container {
